@@ -12,10 +12,11 @@ public class ProducerTest {
     public static void main(String[] args) {
         Message msg = new Message();
         msg.setTopic("tp_test1");
+        Producer.addTopicServer(ip,port,msg.getTopic());
 
         for(int i=0;i<100;i++){
             msg.setBody((" ["+i+"] hello soomq ").getBytes());
-            Producer.sengMsg(ip,port,msg);
+            Producer.sengMsg(msg);
         }
 
     }

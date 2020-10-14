@@ -33,7 +33,8 @@ public class SooMQBootstrap {
     private static ServerConfig getConfig(final String configFilePath) throws IOException {
         Properties properties = new Properties();
         if(configFilePath!=null){
-            try (InputStream inputStream = new FileInputStream(new File(configFilePath))) {
+            try{
+                InputStream inputStream = new FileInputStream(new File(configFilePath));
                 properties.load(inputStream);
             }catch (Exception ex){
                 ex.printStackTrace();
