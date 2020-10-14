@@ -1,12 +1,11 @@
 package com.xs.test.producer;
 
-import com.esoo.mq.client.connection.ConnectionManager;
+import com.esoo.mq.client.consumer.Consumer;
 import com.esoo.mq.client.producer.Producer;
-import com.esoo.mq.client.producer.TopicProducerFactory;
 import com.esoo.mq.client.server.ServerMap;
 import com.esoo.mq.common.Message;
 
-public class ProducerTest {
+public class ConsumerTest {
 
     private static String ip="127.0.0.1";
     private static Integer port=9870;
@@ -14,10 +13,9 @@ public class ProducerTest {
         Message msg = new Message();
         msg.setTopic("tp_test1");
         ServerMap.addTopicServer(ip,port,msg.getTopic());
-
-        for(int i=0;i<100;i++){
-            msg.setBody((" ["+i+"] hello soomq ").getBytes());
-            Producer.sengMsg(msg);
+        msg.setOffset(0);
+        for(int i=0;i<1;i++){
+            Consumer.readMsg(msg);
         }
 
     }

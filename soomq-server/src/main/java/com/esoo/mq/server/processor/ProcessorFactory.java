@@ -10,6 +10,8 @@ public class ProcessorFactory {
     static {
         processorClub = new HashMap<>();
         processorClub.put(ProcessorType.SendMessage.getType(),new SendMessageProcessor());
+        processorClub.put(ProcessorType.ReadMessage.getType(),new ReadMessageProcessor());
+
     }
 
     public synchronized static Processor getProcessorInstantiate(String type){

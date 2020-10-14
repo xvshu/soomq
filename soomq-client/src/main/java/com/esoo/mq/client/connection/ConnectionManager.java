@@ -56,6 +56,7 @@ public class ConnectionManager {
                     ch.pipeline().addLast(new ObjectEncoder());
                     ch.pipeline().addLast(new ObjectDecoder(Integer.MAX_VALUE,
                             ClassResolvers.cacheDisabled(null)));
+                    ch.pipeline().addLast(new SooMqClientHandler());
                 }
             });
             ChannelFuture f = b.connect();

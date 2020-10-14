@@ -3,6 +3,7 @@ package com.esoo.mq.server.netty.handler;
 
 import com.esoo.mq.common.ObjectAndByte;
 import com.esoo.mq.common.ProcessorCommand;
+import com.esoo.mq.common.Result.SooResult;
 import com.esoo.mq.server.processor.Processor;
 import com.esoo.mq.server.processor.ProcessorFactory;
 import io.netty.buffer.ByteBuf;
@@ -21,7 +22,8 @@ public class NettySooMqServerHandler extends ChannelInboundHandlerAdapter {
         try {
             ProcessorCommand command = (ProcessorCommand) msg;
             Processor processor = ProcessorFactory.getProcessorInstantiate(command.getType());
-            processor.handle(command);
+            SooResult result = processor.handle(command);
+            ctx.writeAndFlush(result);
         }catch (Exception e){
             e.printStackTrace();
         }

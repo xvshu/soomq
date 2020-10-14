@@ -1,6 +1,7 @@
 package com.esoo.mq.common;
 
 import java.io.Serializable;
+import java.nio.ByteBuffer;
 import java.util.Map;
 
 public class Message implements Serializable {
@@ -8,6 +9,7 @@ public class Message implements Serializable {
 
     private Map<String, String> properties;
     private byte[] body;
+    private Integer offset;
 
     public String getTopic() {
         return topic;
@@ -33,4 +35,13 @@ public class Message implements Serializable {
     public void setBody(byte[] body) {
         this.body = body;
     }
+
+    public Integer getOffset() {
+        return offset;
+    }
+
+    public void setOffset(Integer offset) {
+        this.offset = offset;
+    }
+
 }

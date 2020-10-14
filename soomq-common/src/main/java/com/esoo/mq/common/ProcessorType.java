@@ -1,7 +1,7 @@
 package com.esoo.mq.common;
 
 public enum ProcessorType {
-    SendMessage("sendmsg");
+    SendMessage("sendmsg"),ReadMessage("readmsg");
 
     private String type;
 

@@ -1,5 +1,6 @@
 package com.esoo.mq.server.message;
 
+import com.alibaba.fastjson.JSON;
 import com.esoo.mq.common.Message;
 import com.esoo.mq.common.Result.SooResult;
 
@@ -14,19 +15,69 @@ public class MessageFile {
     public SooResult<Message,Message> appendMsg(Message in){
         SooResult<Message,Message> result = new SooResult();
         try {
-            String lastLine = readLastLine(indexFile,null);
+            synchronized (in.getTopic()) {
+                String lastLine = readLastLine(indexFile, null);
 
-            int lastOffset=1;
-            long lastindex=lastindex = writeEndLine(dataFile,in.getBody());
-            if(lastLine!=null && !lastLine.equals("")){
-                String index[] = lastLine.split(":");
-                lastOffset = Integer.valueOf(index[0]);
-                lastOffset=lastOffset+1;
+                int lastOffset = 1;
+                long lastindex = lastindex = writeEndLine(dataFile, in.getBody());
+
+                if (lastLine != null && !lastLine.equals("")) {
+                    String index[] = lastLine.split(":");
+                    lastOffset = Integer.valueOf(index[0]);
+                    lastOffset = lastOffset + 1;
+                }
+                String insertMsgIndex = lastOffset + ":" + lastindex + "\t\n";
+                writeEndLine(indexFile, insertMsgIndex.getBytes());
+                result.setResult(in);
+                result.setSuccess(true);
             }
-            String insertMsgIndex=lastOffset+":"+lastindex+"\t\n";
-            writeEndLine(indexFile,insertMsgIndex.getBytes());
-            result.setResult(in);
-            result.setSuccess(true);
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setResult(null);
+            result.setSuccess(false);
+            result.setException(e);
+            result.setMsg(e.getMessage());
+        }
+        return result;
+
+    }
+
+    public SooResult<Message,Message>readMsg(Message in){
+
+        SooResult<Message,Message> result = new SooResult();
+        try {
+            synchronized (in.getTopic()) {
+                int seekIn = 0;
+                int bodySize = 0;
+                indexFile.seek(0);
+                String indesMap=null;
+                while ((indesMap = indexFile.readLine())!=null){
+                    String index[] = indesMap.split(":");
+                    int inNum = Integer.valueOf(String.valueOf(index[0]).trim());
+                    int off = Integer.valueOf(String.valueOf(index[1]).trim());
+                    if (inNum == in.getOffset()) {
+                        seekIn = off;
+                    }
+                    if (inNum == (in.getOffset() + 1)) {
+                        bodySize = off - seekIn;
+                    }
+                }
+                if (bodySize == 0) {
+                    result.setResult(null);
+                    result.setSuccess(false);
+                    result.setMsg("offset is end");
+                    return result;
+                }
+                dataFile.seek(seekIn);
+
+                byte[] b = new byte[bodySize];
+                dataFile.read(b);
+                in.setBody(b);
+
+                result.setResult(in);
+                result.setSuccess(true);
+                System.out.println(" READ MSG IS: "+JSON.toJSONString(result));
+            }
         }catch (Exception e){
             e.printStackTrace();
             result.setResult(null);
@@ -75,6 +126,11 @@ public class MessageFile {
             }
         }
 
+    }
+
+    public static String readByOffset(RandomAccessFile file, String charset) throws Exception {
+
+        return null;
     }
 
 
