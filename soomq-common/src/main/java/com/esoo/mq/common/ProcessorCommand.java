@@ -2,10 +2,11 @@ package com.esoo.mq.common;
 
 import java.io.Serializable;
 
-public class ProcessorCommand<P,V> implements Serializable {
+public class ProcessorCommand implements Serializable {
     private String type;
-    private V result;
-    private P parameter;
+    private String exmsg;
+    private Message result;
+    private boolean isSuccess=false;
 
     public String getType() {
         return type;
@@ -15,19 +16,27 @@ public class ProcessorCommand<P,V> implements Serializable {
         this.type = type;
     }
 
-    public V getResult() {
+    public Message getResult() {
         return result;
     }
 
-    public void setResult(V result) {
+    public void setResult(Message result) {
         this.result = result;
     }
 
-    public P getParameter() {
-        return parameter;
+    public String getExmsg() {
+        return exmsg;
     }
 
-    public void setParameter(P parameter) {
-        this.parameter = parameter;
+    public void setExmsg(String exmsg) {
+        this.exmsg = exmsg;
+    }
+
+    public boolean isSuccess() {
+        return isSuccess;
+    }
+
+    public void setSuccess(boolean success) {
+        isSuccess = success;
     }
 }

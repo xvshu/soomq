@@ -1,6 +1,7 @@
 package com.esoo.mq.server;
 
 import com.esoo.mq.server.netty.handler.NettySooMqServerHandler;
+import com.esoo.mq.server.netty.handler.NettySooMqServerOutHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelFuture;
@@ -44,6 +45,7 @@ public class SooMQServer {
                     ch.pipeline().addLast(new ObjectEncoder());
                     ch.pipeline().addLast(new ObjectDecoder(Integer.MAX_VALUE,
                             ClassResolvers.cacheDisabled(null)));
+                    ch.pipeline().addLast(new NettySooMqServerOutHandler());
                     ch.pipeline().addLast(new NettySooMqServerHandler());
                 }
             });

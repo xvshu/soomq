@@ -1,13 +1,9 @@
 package com.esoo.mq.client.producer;
 
-import com.esoo.mq.client.connection.ConnectionManager;
 import com.esoo.mq.client.server.Server;
 import com.esoo.mq.client.server.ServerMap;
 import com.esoo.mq.common.Message;
-import com.esoo.mq.common.Result.SooResult;
 import com.esoo.mq.common.exception.SooMQException;
-
-import java.util.HashMap;
 
 public class Producer {
 

@@ -1,17 +1,11 @@
 package com.esoo.mq.server.netty.handler;
 
 
-import com.esoo.mq.common.ObjectAndByte;
+import com.alibaba.fastjson.JSON;
 import com.esoo.mq.common.ProcessorCommand;
-import com.esoo.mq.common.Result.SooResult;
 import com.esoo.mq.server.processor.Processor;
 import com.esoo.mq.server.processor.ProcessorFactory;
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-
-import java.nio.ByteBuffer;
+import io.netty.channel.*;
 
 @ChannelHandler.Sharable
 public class NettySooMqServerHandler extends ChannelInboundHandlerAdapter {
@@ -21,22 +15,32 @@ public class NettySooMqServerHandler extends ChannelInboundHandlerAdapter {
 
         try {
             ProcessorCommand command = (ProcessorCommand) msg;
+            System.out.println("["+ctx.channel().remoteAddress()+"] msg:"+JSON.toJSONString(msg));
             Processor processor = ProcessorFactory.getProcessorInstantiate(command.getType());
-            SooResult result = processor.handle(command);
-            ctx.writeAndFlush(result);
+            msg = processor.handle(command);
+            ChannelFuture f = ctx.writeAndFlush(msg);
+            f.addListener(new ChannelFutureListener() {
+                @Override
+                public void operationComplete(ChannelFuture future) throws Exception {
+                    System.out.println("msg ctx send");
+                }
+            });
         }catch (Exception e){
             e.printStackTrace();
         }
     }
 
     @Override
-    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
-
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        super.channelInactive(ctx);
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-
+        System.out.println(cause.getMessage());
+        ctx.close();
     }
+
+
 
 }

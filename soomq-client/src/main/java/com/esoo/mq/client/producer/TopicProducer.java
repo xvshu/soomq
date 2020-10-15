@@ -2,14 +2,10 @@ package com.esoo.mq.client.producer;
 
 import com.esoo.mq.client.connection.ConnectionManager;
 import com.esoo.mq.common.Message;
-import com.esoo.mq.common.ObjectAndByte;
 import com.esoo.mq.common.ProcessorCommand;
 import com.esoo.mq.common.ProcessorType;
-import com.esoo.mq.common.Result.SooResult;
 import io.netty.channel.Channel;
 
-import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
 import java.util.concurrent.*;
 
 public class TopicProducer {
@@ -35,8 +31,7 @@ public class TopicProducer {
             public void run() {
                 try {
                     Channel channel = ConnectionManager.get(serverIp, serverPort);
-                    ProcessorCommand<Message, Message> command = new ProcessorCommand();
-                    command.setParameter(msg);
+                    ProcessorCommand command = new ProcessorCommand();
                     command.setResult(msg);
                     command.setType(ProcessorType.SendMessage.getType());
                     channel.writeAndFlush(command);

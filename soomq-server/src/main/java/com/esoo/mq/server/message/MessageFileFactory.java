@@ -1,6 +1,6 @@
 package com.esoo.mq.server.message;
 
-import com.esoo.mq.common.Result.SooResult;
+import com.esoo.mq.common.ProcessorCommand;
 import com.esoo.mq.common.Utils;
 import com.esoo.mq.server.SooMQBootstrap;
 
@@ -12,8 +12,8 @@ public class MessageFileFactory {
     private static final String dataPath = SooMQBootstrap.serverConfig.getDataPath();
 
     private static HashMap<String,MessageFile> filesMap = new HashMap();
-    public static SooResult<Object,MessageFile> getTopicFile (String topic){
-        SooResult result = new SooResult();
+    public static MessageFile getTopicFile (String topic){
+        MessageFile result = null;
         synchronized(topic) {
             if (!filesMap.containsKey(topic)) {
                 try {
@@ -30,15 +30,11 @@ public class MessageFileFactory {
                     filesMap.put(topic, msgF);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    result.setResult(null);
-                    result.setSuccess(false);
-                    result.setException(e);
-                    result.setMsg(e.getMessage());
-                }
 
+                }
             }
-            result.setResult(filesMap.get(topic));
-            result.setSuccess(true);
+            result=filesMap.get(topic);
+
         }
         return result;
     }

@@ -1,41 +1,26 @@
-package com.esoo.mq.client.connection;
+package com.xs.test.producer;
 
+import com.esoo.mq.client.connection.SooMqClientHandler;
+import com.esoo.mq.common.Message;
+import com.esoo.mq.common.ProcessorCommand;
+import com.esoo.mq.common.ProcessorType;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
 
-import java.net.InetSocketAddress;
-import java.nio.channels.SocketChannel;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Scanner;
 
-public class ConnectionManager {
-    private static HashMap<String,Channel> channelMap=new HashMap<>();
-
-    public static Channel get(String ip,Integer port){
-        Channel channel=null;
-        String url = ip+":"+port;
-        synchronized (url) {
-            if (!channelMap.containsKey(url)) {
-                channel=createChannel(ip,port);
-                channelMap.put(url,channel);
-            }else{
-                channel= channelMap.get(url);
-            }
-        }
-        return channel;
-    }
-
-    private static Channel createChannel(String ip,Integer port){
+public class NettyTest {
+    public static void main(String[] args) {
         Bootstrap b = new Bootstrap();
         //创建reactor 线程组
         EventLoopGroup workerLoopGroup = new NioEventLoopGroup();
-        Channel channel=null;
         try {
 
             //1 设置reactor 线程组
@@ -43,12 +28,12 @@ public class ConnectionManager {
             //2 设置nio类型的channel
             b.channel(NioSocketChannel.class);
             //3 设置监听端口
-            b.remoteAddress(ip, port);
+            b.remoteAddress(ProducerTest.ip, ProducerTest.port);
             //4 设置通道的参数
             b.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
 
             //5 装配子通道流水线
-            b.handler(new ChannelInitializer<io.netty.channel.socket.SocketChannel>() {
+            b.handler(new ChannelInitializer<SocketChannel>() {
                 //有连接到达时会创建一个channel
                 @Override
                 protected void initChannel(io.netty.channel.socket.SocketChannel ch) throws Exception {
@@ -57,7 +42,6 @@ public class ConnectionManager {
                     ch.pipeline().addLast(new ObjectEncoder());
                     ch.pipeline().addLast(new ObjectDecoder(Integer.MAX_VALUE,
                             ClassResolvers.cacheDisabled(null)));
-                    ch.pipeline().addLast(new SooMqClientOutHandler());
                     ch.pipeline().addLast(new SooMqClientHandler());
                 }
             });
@@ -75,24 +59,34 @@ public class ConnectionManager {
 
             // 阻塞,直到连接完成
             f.sync();
-            channel = f.channel();
+            Channel channel = f.channel();
+
+            Scanner scanner = new Scanner(System.in);
+            Print.tcfo("请输入发送内容:");
+
+            while (scanner.hasNext()) {
+                //获取输入的内容
+                String next = scanner.next();
+                Message msg = new Message();
+                msg.setTopic(ProducerTest.topic);
+
+                msg.setBody(next.getBytes());
+
+                ProcessorCommand command = new ProcessorCommand();
+                command.setResult(msg);
+                command.setType(ProcessorType.SendMessage.getType());
+
+                channel.writeAndFlush(command);
+            }
+
         }catch (Exception ex){
             ex.printStackTrace();
-            channel=null;
-        }
-        return channel;
-    }
 
-    public static void shutdown(){
-        for(Map.Entry<String, Channel> entry : channelMap.entrySet()){
-            try {
-                Channel channel = entry.getValue();
-                if (channel != null && channel.isOpen()) {
-                    channel.close();
-                }
-            }catch (Exception e){
-                e.printStackTrace();
-            }
+        }finally {
+            // 优雅关闭EventLoopGroup，
+            // 释放掉所有资源包括创建的线程
+            workerLoopGroup.shutdownGracefully();
         }
+
     }
 }

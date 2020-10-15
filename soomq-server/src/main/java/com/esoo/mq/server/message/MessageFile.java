@@ -2,7 +2,7 @@ package com.esoo.mq.server.message;
 
 import com.alibaba.fastjson.JSON;
 import com.esoo.mq.common.Message;
-import com.esoo.mq.common.Result.SooResult;
+import com.esoo.mq.common.ProcessorCommand;
 
 import java.io.RandomAccessFile;
 
@@ -12,14 +12,14 @@ public class MessageFile {
     private RandomAccessFile indexFile = null ;
     private RandomAccessFile dataFile = null ;
 
-    public SooResult<Message,Message> appendMsg(Message in){
-        SooResult<Message,Message> result = new SooResult();
+    public ProcessorCommand appendMsg(ProcessorCommand in){
+
         try {
-            synchronized (in.getTopic()) {
+            synchronized (in.getResult().getTopic()) {
                 String lastLine = readLastLine(indexFile, null);
 
                 int lastOffset = 1;
-                long lastindex = lastindex = writeEndLine(dataFile, in.getBody());
+                long lastindex =  writeEndLine(dataFile, in.getResult().getBody());
 
                 if (lastLine != null && !lastLine.equals("")) {
                     String index[] = lastLine.split(":");
@@ -28,25 +28,23 @@ public class MessageFile {
                 }
                 String insertMsgIndex = lastOffset + ":" + lastindex + "\t\n";
                 writeEndLine(indexFile, insertMsgIndex.getBytes());
-                result.setResult(in);
-                result.setSuccess(true);
+                in.setSuccess(true);
             }
         }catch (Exception e){
             e.printStackTrace();
-            result.setResult(null);
-            result.setSuccess(false);
-            result.setException(e);
-            result.setMsg(e.getMessage());
+
+            in.setSuccess(false);
+            in.setExmsg(e.getMessage());
         }
-        return result;
+        return in;
 
     }
 
-    public SooResult<Message,Message>readMsg(Message in){
+    public ProcessorCommand readMsg(ProcessorCommand in){
 
-        SooResult<Message,Message> result = new SooResult();
+
         try {
-            synchronized (in.getTopic()) {
+            synchronized (in.getResult().getTopic()) {
                 int seekIn = 0;
                 int bodySize = 0;
                 indexFile.seek(0);
@@ -55,37 +53,33 @@ public class MessageFile {
                     String index[] = indesMap.split(":");
                     int inNum = Integer.valueOf(String.valueOf(index[0]).trim());
                     int off = Integer.valueOf(String.valueOf(index[1]).trim());
-                    if (inNum == in.getOffset()) {
+                    if (inNum == in.getResult().getOffset()) {
                         seekIn = off;
                     }
-                    if (inNum == (in.getOffset() + 1)) {
+                    if (inNum == (in.getResult().getOffset() + 1)) {
                         bodySize = off - seekIn;
                     }
                 }
                 if (bodySize == 0) {
-                    result.setResult(null);
-                    result.setSuccess(false);
-                    result.setMsg("offset is end");
-                    return result;
+                    in.setSuccess(false);
+                    in.setExmsg("offset is end");
+                    return in;
                 }
                 dataFile.seek(seekIn);
 
                 byte[] b = new byte[bodySize];
                 dataFile.read(b);
-                in.setBody(b);
+                in.getResult().setBody(b);
 
-                result.setResult(in);
-                result.setSuccess(true);
-                System.out.println(" READ MSG IS: "+JSON.toJSONString(result));
+                in.setSuccess(true);
+                System.out.println(" READ MSG IS: "+JSON.toJSONString(in));
             }
         }catch (Exception e){
             e.printStackTrace();
-            result.setResult(null);
-            result.setSuccess(false);
-            result.setException(e);
-            result.setMsg(e.getMessage());
+            in.setSuccess(false);
+            in.setExmsg(e.getMessage());
         }
-        return result;
+        return in;
 
     }
 
