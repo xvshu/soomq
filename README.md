@@ -18,7 +18,7 @@ MQ（Message Queue）是互联网公司绕不过去的一个技术，核心功�
 运行test包中 ConsumerTest.mian()
 
 
-便于初学者理解：
+# 便于初学者理解：
 
 | 术语 |说明  |
 |--|--|
