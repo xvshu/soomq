@@ -1,4 +1,4 @@
-![logo](https://github.com/xvshu/soomq/blob/main/doc/logo.jpg)
+![logo](https://img-blog.csdnimg.cn/20201016145727514.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3h2c2h1,size_16,color_FFFFFF,t_70#pic_center)
 
 # 为什么重复造轮子
 MQ（Message Queue）是互联网公司绕不过去的一个技术，核心功能就是进行消息的收发管理，已达到某些特殊功能，比如流量削峰，异步执行，日志聚合等。
